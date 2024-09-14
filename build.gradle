@@ -7,7 +7,7 @@ group 'com.github.sbanal.littlepay'
 version '1.0-SNAPSHOT'
 
 compileJava {
-    options.release = 15
+    options.release = 22
 }
 
 repositories {
