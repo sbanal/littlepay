@@ -1,9 +1,7 @@
 package com.github.sbanal.littlepay;
 
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 public class LittlePayAppCli {
 
@@ -18,13 +16,17 @@ public class LittlePayAppCli {
 
     public void processCommand(String tripCostCsv, String inputCsv, String outputCsv) throws IOException {
         TripCostService tripCostService = new TripCostService();
-        tripCostService.load(new FileReader(tripCostCsv));
+        try (Reader tripCostReader = new FileReader(tripCostCsv);
+             Reader inputCsvReader = new FileReader(inputCsv);
+             Writer outputCsvWriter = new FileWriter(outputCsv)) {
+            tripCostService.load(tripCostReader);
 
-        TripEventReader tripEventReader = new TripEventReader(new FileReader(inputCsv));
-        TripCompletionEventWriter tripCompletionEventWriter = new TripCompletionEventWriter(new FileWriter(outputCsv));
+            TripEventReader tripEventReader = new TripEventReader(inputCsvReader);
+            TripCompletionEventWriter tripCompletionEventWriter = new TripCompletionEventWriter(outputCsvWriter);
 
-        TripEventService tripEventService = new TripEventService(tripCostService);
-        tripEventService.processEvents(tripEventReader, tripCompletionEventWriter);
+            TripEventService tripEventService = new TripEventService(tripCostService);
+            tripEventService.processEvents(tripEventReader, tripCompletionEventWriter);
+        }
     }
 
 }
