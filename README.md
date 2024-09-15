@@ -46,7 +46,7 @@ This code is built and tested using the following toolset:
 
 ## Build & Run Tests
 ```
-gradle clean build
+./gradlew clean build
 ```
 Distribution is found in folder build/distributions/littlepay-1.0-SNAPSHOT.zip
 
