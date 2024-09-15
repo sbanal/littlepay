@@ -1,4 +1,4 @@
 package com.github.sbanal.littlepay;
 
-record TripRoute(String startStop, String endStop) {
+record TripRoute(String startStopId, String endStopId) {
 }
