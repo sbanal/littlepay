@@ -8,7 +8,7 @@ public class LittlePayAppCli {
     public static void main(String... args) throws IOException {
         if (args.length < 3) {
             throw new IllegalArgumentException("Invalid argument, usage: " +
-                    "java -jar littlepay-cli.jar <trip cost csv> <input csv file> <output csv file>");
+                    "./littlepay <trip cost csv file> <input taps csv file> <output trips csv file>");
         }
         LittlePayAppCli littlePayAppCli = new LittlePayAppCli();
         littlePayAppCli.processCommand(args[0], args[1], args[2]);

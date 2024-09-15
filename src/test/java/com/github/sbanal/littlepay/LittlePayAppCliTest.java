@@ -15,7 +15,7 @@ class LittlePayAppCliTest {
     public void processCommand_withIncompleteInput() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, LittlePayAppCli::main);
         assertEquals("Invalid argument, usage: " +
-                "java -jar littlepay-cli.jar <trip cost csv> <input csv file> <output csv file>", ex.getMessage());
+                "./littlepay <trip cost csv file> <input taps csv file> <output trips csv file>", ex.getMessage());
     }
 
     @Test
