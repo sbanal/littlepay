@@ -6,7 +6,6 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,7 +57,7 @@ class TripEventServiceTest {
         when(mockTripCostService.getTripCost("stop1", null)).thenReturn(555.00f);
         Instant tapOnDateTime = Instant.now();
         when(mockTripEventReader.readEvents()).thenReturn(
-                Arrays.asList(
+                List.of(
                         new TripEvent(1L, tapOnDateTime, TapType.ON, "stop1", "company1", "bus1", "123123123")
                 )
         );
@@ -179,7 +178,7 @@ class TripEventServiceTest {
         when(mockTripCostService.getTripCost("stop1", "stop1")).thenReturn(555.00f);
         Instant tapOnDateTime = Instant.now();
         when(mockTripEventReader.readEvents()).thenReturn(
-                Arrays.asList(
+                List.of(
                         new TripEvent(1L, tapOnDateTime, TapType.OFF, "stop1", "company1", "bus1", "123123123")
                 )
         );

@@ -1,19 +1,30 @@
 package com.github.sbanal.littlepay;
 
 
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class LittlePayAppCli {
 
-    public static void main(String... args) {
-        if (args.length < 1) {
-            System.out.println("java -jar littlepay-cli.jar <input csv>");
-            return;
+    public static void main(String... args) throws IOException {
+        if (args.length < 3) {
+            throw new IllegalArgumentException("Invalid argument, usage: " +
+                    "java -jar littlepay-cli.jar <trip cost csv> <input csv file> <output csv file>");
         }
         LittlePayAppCli littlePayAppCli = new LittlePayAppCli();
-        littlePayAppCli.hello();
+        littlePayAppCli.processCommand(args[0], args[1], args[2]);
     }
 
-    public void hello() {
-        System.out.println("Hello");
+    public void processCommand(String tripCostCsv, String inputCsv, String outputCsv) throws IOException {
+        TripCostService tripCostService = new TripCostService();
+        tripCostService.load(new FileReader(tripCostCsv));
+
+        TripEventReader tripEventReader = new TripEventReader(new FileReader(inputCsv));
+        TripCompletionEventWriter tripCompletionEventWriter = new TripCompletionEventWriter(new FileWriter(outputCsv));
+
+        TripEventService tripEventService = new TripEventService(tripCostService);
+        tripEventService.processEvents(tripEventReader, tripCompletionEventWriter);
     }
 
 }

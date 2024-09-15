@@ -8,13 +8,14 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TripCompletionEventWriterTest {
 
+    private static final DateTimeFormatter UTC_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
     static String formatToUtcStr(Instant instant) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        return instant.atZone(ZoneId.of("UTC")).format(formatter);
+        return instant.atZone(ZoneId.of("UTC")).format(UTC_FORMATTER);
     }
 
     @Test

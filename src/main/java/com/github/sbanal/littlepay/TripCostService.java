@@ -1,15 +1,36 @@
 package com.github.sbanal.littlepay;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.*;
 
 public class TripCostService {
     private static final float CANCELLED_TRIP_COST = 0.0f;
 
-    private Set<String> routeStops = new HashSet<>();
-    private Map<TripRoute, Float> tripCostTable = new HashMap<>();
-    private Map<String, Set<String>> routeEdges = new HashMap<>();
+    private final Set<String> routeStops = new HashSet<>();
+    private final Map<TripRoute, Float> tripCostTable = new HashMap<>();
+    private final Map<String, Set<String>> routeEdges = new HashMap<>();
+
+    public void load(Reader reader) throws IOException {
+        try (CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+                .withFirstRecordAsHeader()
+                .withIgnoreHeaderCase()
+                .withTrim())) {
+            for (CSVRecord csvRecord : csvParser.getRecords()) {
+                addTripCost(
+                        csvRecord.get("StartStopId"),
+                        csvRecord.get("EndStopId"),
+                        Float.parseFloat(csvRecord.get("Cost"))
+                );
+            }
+        }
+        calculateIncompleteTripCost();
+    }
 
     public void addTripCost(String routeStartStopId, String routeEndStopId, Float tripCost) {
         if (StringUtils.isEmpty(routeStartStopId)) {
@@ -32,7 +53,7 @@ public class TripCostService {
     private void addEdge(String routeStartStopId, String routeEndStopId) {
         Set<String> routeEdges = this.routeEdges.get(routeStartStopId);
         if (routeEdges == null) {
-            this.routeEdges.put(routeStartStopId, new HashSet<>(Arrays.asList(routeEndStopId)));
+            this.routeEdges.put(routeStartStopId, new HashSet<>(Collections.singletonList(routeEndStopId)));
         } else {
             routeEdges.add(routeEndStopId);
         }
@@ -40,7 +61,7 @@ public class TripCostService {
 
     public void calculateIncompleteTripCost() {
         for (String routeStartStopId : this.routeStops) {
-            Float maxCost = Float.MIN_VALUE;
+            float maxCost = Float.MIN_VALUE;
             for (String routeEndStopId : this.routeEdges.get(routeStartStopId)) {
                 maxCost = Math.max(this.tripCostTable.get(new TripRoute(routeStartStopId, routeEndStopId)), maxCost);
             }
@@ -67,7 +88,8 @@ public class TripCostService {
             tripCost = this.tripCostTable.get(new TripRoute(routeStartStopId, null));
         }
         if (tripCost == null) {
-            throw new IllegalArgumentException("Invalid route start and route end combination");
+            throw new IllegalArgumentException("Invalid route start '" + routeStartStopId + "'" +
+                    " and route end '" + routeEndStopId + "' combination");
         }
         return tripCost;
     }

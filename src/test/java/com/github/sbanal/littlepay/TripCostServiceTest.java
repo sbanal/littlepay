@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 
+import java.io.FileReader;
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TripCostServiceTest {
@@ -65,7 +68,20 @@ class TripCostServiceTest {
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> service.getTripCost("stop1", "stop4"));
-        assertEquals("Invalid route start and route end combination", ex.getMessage());
+        assertEquals("Invalid route start 'stop1' and route end 'stop4' combination", ex.getMessage());
+    }
+
+    @Test
+    void getTripCost_withTripCostLoadedAndCompletedTrip_shouldReturnTripCost() throws IOException {
+        TripCostService service = new TripCostService();
+        service.load(new FileReader("src/test/resources/trip-cost.csv"));
+
+        assertEquals(3.25f, service.getTripCost("Stop1", "Stop2"));
+        assertEquals(3.25f, service.getTripCost("Stop2", "Stop1"));
+        assertEquals(5.50f, service.getTripCost("Stop2", "Stop3"));
+        assertEquals(5.50f, service.getTripCost("Stop3", "Stop2"));
+        assertEquals(7.30f, service.getTripCost("Stop1", "Stop3"));
+        assertEquals(7.30f, service.getTripCost("Stop3", "Stop1"));
     }
 
     @Test

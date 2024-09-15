@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -12,7 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TripEventReaderTest {
 
-    DateTimeFormatter UTC_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+    private static final DateTimeFormatter UTC_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+    static String formatToUtcStr(Instant instant) {
+        return instant.atZone(ZoneId.of("UTC")).format(UTC_FORMATTER);
+    }
 
     @Test
     void parse_withInvalidCsvColumns_shouldThrowException() {
@@ -24,17 +29,17 @@ class TripEventReaderTest {
 
     @Test
     void parse_withValidFormat_shouldReturnTripEvents() throws IOException {
-        StringReader stringReader = new StringReader("ID, DateTimeUTC, TapType, StopId, CompanyId, BusID, PAN\n" +
-                "1, 22-01-2023 13:00:00, ON, Stop1, Company1, Bus37, 5500005555555559 \n" +
-                "2, 22-01-2023 13:05:00, OFF, Stop2, Company1, Bus37, 5500005555555559");
+        StringReader stringReader = new StringReader("""
+                ID, DateTimeUTC, TapType, StopId, CompanyId, BusID, PAN
+                1, 22-01-2023 13:00:00, ON, Stop1, Company1, Bus37, 5500005555555559\s
+                2, 22-01-2023 13:05:00, OFF, Stop2, Company1, Bus37, 5500005555555559""");
 
         List<TripEvent> tripEventList = new TripEventReader(stringReader).readEvents();
         assertNotNull(tripEventList);
         assertEquals(2, tripEventList.size());
 
         assertEquals(1, tripEventList.get(0).id());
-        assertEquals("22-01-2023 13:00:00",
-                tripEventList.get(0).dateTimeUtc().atZone(ZoneId.of("UTC")).format(UTC_FORMATTER));
+        assertEquals("22-01-2023 13:00:00", formatToUtcStr(tripEventList.get(0).dateTimeUtc()));
         assertEquals(TapType.ON, tripEventList.get(0).tapType());
         assertEquals("Stop1", tripEventList.get(0).stopId());
         assertEquals("Company1", tripEventList.get(0).companyId());
@@ -42,8 +47,7 @@ class TripEventReaderTest {
         assertEquals("5500005555555559", tripEventList.get(0).pan());
 
         assertEquals(2, tripEventList.get(1).id());
-        assertEquals("22-01-2023 13:05:00",
-                tripEventList.get(1).dateTimeUtc().atZone(ZoneId.of("UTC")).format(UTC_FORMATTER));
+        assertEquals("22-01-2023 13:05:00", formatToUtcStr(tripEventList.get(1).dateTimeUtc()));
         assertEquals(TapType.OFF, tripEventList.get(1).tapType());
         assertEquals("Stop2", tripEventList.get(1).stopId());
         assertEquals("Company1", tripEventList.get(1).companyId());
