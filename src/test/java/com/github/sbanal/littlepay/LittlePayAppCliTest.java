@@ -21,8 +21,7 @@ class LittlePayAppCliTest {
     @Test
     public void processCommand_withValidInputOutputFiles() throws IOException {
         String outputTripsFile = "src/test/resources/trips.csv";
-        LittlePayAppCli littlePayAppCli = new LittlePayAppCli();
-        littlePayAppCli.processCommand(
+        LittlePayAppCli.main(
                 "src/test/resources/trip-cost.csv",
                 "src/test/resources/taps.csv",
                 "src/test/resources/trips.csv");

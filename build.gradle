@@ -23,7 +23,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.github.sbanal.littlepay.LittlePayApp")
+    mainClass.set("com.github.sbanal.littlepay.LittlePayAppCli")
 }
 
 test {
