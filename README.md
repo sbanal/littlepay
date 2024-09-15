@@ -9,6 +9,8 @@ This code is built and tested using the following toolset:
 * Input taps.csv is valid and the order of the records are based on tap DateTimeUTC
 * In taps.csv, both tap on and out event records have the same values for columns Company Id and Bus ID. No evaluation of any kind is done on this and is expected to be valid. The code uses the tap on event company id and bus id columns values when writing the trips event record
 * In taps.csv, PAN is valid and unique and should be the same one used for Tap On and Tap Off events. No validation of any kind is done for this column since it seems validation is irrelevant to the problem
+* If customer did not tap off after all the records are read in taps.csv, it is assumed that they have an incomplete trip and will incur maximum cost
+* If customer tap on successively, the previous trip will be considered an incomplete trip and will incur maximum cost even if they tap on on the same stop
 * In trips.csv, empty string is written on Finished, DurationSecs and ToStopId for INCOMPLETE Status trips
 
 ## Design Decisions
