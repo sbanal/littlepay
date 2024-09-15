@@ -12,16 +12,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TripCompletionEventWriterTest {
 
-    @Test
-    void write_shouldWriteToWriterWithColumns() throws IOException {
+    static String formatToUtcStr(Instant instant) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        return instant.atZone(ZoneId.of("UTC")).format(formatter);
+    }
+
+    @Test
+    void write_withCompletedTrip_shouldWriteToWriterWithColumns() throws IOException {
         StringWriter stringWriter = new StringWriter();
-        Instant timeNow = Instant.now();
+        Instant tapOnDateTime = Instant.now();
+        Instant tapOffDateTime = tapOnDateTime.plusSeconds(600);
 
         try (TripCompletionEventWriter tripCompletionEventWriter = new TripCompletionEventWriter(stringWriter)) {
             TripCompletionEvent tripCompletionEvent = new TripCompletionEvent(
-                    timeNow,
-                    timeNow,
+                    tapOnDateTime,
+                    tapOffDateTime,
                     100L,
                     "stop1",
                     "stop2",
@@ -34,12 +39,73 @@ class TripCompletionEventWriterTest {
             tripCompletionEventWriter.write(tripCompletionEvent);
         }
 
-        String dateTimeUtc = timeNow.atZone(ZoneId.of("UTC")).format(formatter);
         String expectedOutput = String.format(
-                "Started,Finished,DurationSecs,FromStopId,ToStopId,ChargeAmount,CompanyId,BusID,PAN,Status\n" +
-                "%s,%s,100,stop1,stop2,$1.23,company1,bus1,123123,COMPLETED\n",
-                dateTimeUtc, dateTimeUtc);
+                """
+                        Started,Finished,DurationSecs,FromStopId,ToStopId,ChargeAmount,CompanyId,BusID,PAN,Status
+                        %s,%s,100,stop1,stop2,$1.23,company1,bus1,123123,COMPLETED
+                        """,
+                formatToUtcStr(tapOnDateTime), formatToUtcStr(tapOffDateTime));
         assertEquals(expectedOutput, stringWriter.toString());
     }
 
+    @Test
+    void write_withIncompleteTrip_shouldWriteToWriterWithColumns() throws IOException {
+        StringWriter stringWriter = new StringWriter();
+        Instant tapOnDateTime = Instant.now();
+
+        try (TripCompletionEventWriter tripCompletionEventWriter = new TripCompletionEventWriter(stringWriter)) {
+            TripCompletionEvent tripCompletionEvent = new TripCompletionEvent(
+                    tapOnDateTime,
+                    null,
+                    null,
+                    "stop1",
+                    null,
+                    1.23f,
+                    "company1",
+                    "bus1",
+                    "123123",
+                    TripCompletionStatus.INCOMPLETE
+            );
+            tripCompletionEventWriter.write(tripCompletionEvent);
+        }
+
+        String expectedOutput = String.format(
+                """
+                        Started,Finished,DurationSecs,FromStopId,ToStopId,ChargeAmount,CompanyId,BusID,PAN,Status
+                        %s,,,stop1,,$1.23,company1,bus1,123123,INCOMPLETE
+                        """,
+                formatToUtcStr(tapOnDateTime));
+        assertEquals(expectedOutput, stringWriter.toString());
+    }
+
+    @Test
+    void write_withCancelledTrip_shouldWriteToWriterWithColumns() throws IOException {
+        StringWriter stringWriter = new StringWriter();
+        Instant tapOnDateTime = Instant.now();
+        Instant tapOffDateTime = tapOnDateTime.plusSeconds(600);
+
+        try (TripCompletionEventWriter tripCompletionEventWriter = new TripCompletionEventWriter(stringWriter)) {
+            TripCompletionEvent tripCompletionEvent = new TripCompletionEvent(
+                    tapOnDateTime,
+                    tapOffDateTime,
+                    100L,
+                    "stop1",
+                    "stop1",
+                    0.0f,
+                    "company1",
+                    "bus1",
+                    "123123",
+                    TripCompletionStatus.CANCELLED
+            );
+            tripCompletionEventWriter.write(tripCompletionEvent);
+        }
+
+        String expectedOutput = String.format(
+                """
+                        Started,Finished,DurationSecs,FromStopId,ToStopId,ChargeAmount,CompanyId,BusID,PAN,Status
+                        %s,%s,100,stop1,stop1,$0.00,company1,bus1,123123,CANCELLED
+                        """,
+                formatToUtcStr(tapOnDateTime), formatToUtcStr(tapOffDateTime));
+        assertEquals(expectedOutput, stringWriter.toString());
+    }
 }

@@ -2,11 +2,13 @@ package com.github.sbanal.littlepay;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.DecimalFormat;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -50,11 +52,11 @@ public class TripCompletionEventWriter implements Closeable {
 
     public void write(TripCompletionEvent completionEvent) throws IOException {
         String[] rowData = {
-                completionEvent.started().atZone(UTC_ZONE_ID).format(UTC_DATE_FORMATTER),
-                completionEvent.finished().atZone(UTC_ZONE_ID).format(UTC_DATE_FORMATTER),
-                completionEvent.durationSecs().toString(),
+                toUtcDateFormat(completionEvent.started()),
+                toUtcDateFormat(completionEvent.finished()),
+                defaultEmptyStringIfNull(completionEvent.durationSecs()),
                 completionEvent.fromStopId(),
-                completionEvent.toStopId(),
+                StringUtils.defaultIfEmpty(completionEvent.toStopId(), ""),
                 DECIMAL_FORMAT.format(completionEvent.chargeAmount()),
                 completionEvent.companyId(),
                 completionEvent.busId(),
@@ -64,4 +66,19 @@ public class TripCompletionEventWriter implements Closeable {
         csvPrinter.printRecord(Arrays.asList(rowData));
     }
 
+    private String defaultEmptyStringIfNull(Long value) {
+        if (value == null) {
+            return "";
+        } else {
+            return value.toString();
+        }
+    }
+
+    private String toUtcDateFormat(Instant dateTimeUtc) {
+        if (dateTimeUtc != null) {
+            return dateTimeUtc.atZone(UTC_ZONE_ID).format(UTC_DATE_FORMATTER);
+        } else {
+            return "";
+        }
+    }
 }
