@@ -10,7 +10,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TripEventParserTest {
+class TripEventReaderTest {
 
     DateTimeFormatter UTC_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -19,7 +19,7 @@ class TripEventParserTest {
         StringReader stringReader = new StringReader("some, invalid, csv\n" +
                 "test, test, test");
 
-        assertThrows(IllegalArgumentException.class, () -> TripEventParser.parse(stringReader));
+        assertThrows(InvalidTripEventException.class, () -> new TripEventReader(stringReader).readEvents());
     }
 
     @Test
@@ -28,7 +28,7 @@ class TripEventParserTest {
                 "1, 22-01-2023 13:00:00, ON, Stop1, Company1, Bus37, 5500005555555559 \n" +
                 "2, 22-01-2023 13:05:00, OFF, Stop2, Company1, Bus37, 5500005555555559");
 
-        List<TripEvent> tripEventList = TripEventParser.parse(stringReader);
+        List<TripEvent> tripEventList = new TripEventReader(stringReader).readEvents();
         assertNotNull(tripEventList);
         assertEquals(2, tripEventList.size());
 
@@ -57,7 +57,7 @@ class TripEventParserTest {
                 "1a, 22-01-2023 13:00:00, ON, Stop1, Company1, Bus37, 5500005555555559");
 
         InvalidTripEventException ex = assertThrows(InvalidTripEventException.class,
-                () -> TripEventParser.parse(stringReader));
+                () -> new TripEventReader(stringReader).readEvents());
         assertEquals("Invalid trip event ID for record 1a", ex.getMessage());
     }
 
@@ -67,7 +67,7 @@ class TripEventParserTest {
                 "1, 22-01-2023a 13:00:00, ON, Stop1, Company1, Bus37, 5500005555555559");
 
         InvalidTripEventException ex = assertThrows(InvalidTripEventException.class,
-                () -> TripEventParser.parse(stringReader));
+                () -> new TripEventReader(stringReader).readEvents());
         assertEquals("Invalid trip event DateTimeUTC for record 1", ex.getMessage());
     }
 
@@ -77,7 +77,7 @@ class TripEventParserTest {
                 "1, 22-01-2023 13:00:00, invalid, Stop1, Company1, Bus37, 5500005555555559");
 
         InvalidTripEventException ex = assertThrows(InvalidTripEventException.class,
-                () -> TripEventParser.parse(stringReader));
+                () -> new TripEventReader(stringReader).readEvents());
         assertEquals("Invalid trip event TapType for record 1", ex.getMessage());
     }
 
@@ -87,7 +87,7 @@ class TripEventParserTest {
                 "1, 22-01-2023 13:00:00, ON, , Company1, Bus37, 5500005555555559");
 
         InvalidTripEventException ex = assertThrows(InvalidTripEventException.class,
-                () -> TripEventParser.parse(stringReader));
+                () -> new TripEventReader(stringReader).readEvents());
         assertEquals("Invalid trip event StopId for record 1", ex.getMessage());
     }
 
@@ -97,7 +97,7 @@ class TripEventParserTest {
                 "1, 22-01-2023 13:00:00, ON, Stop1, , Bus37, 5500005555555559");
 
         InvalidTripEventException ex = assertThrows(InvalidTripEventException.class,
-                () -> TripEventParser.parse(stringReader));
+                () -> new TripEventReader(stringReader).readEvents());
         assertEquals("Invalid trip event CompanyId for record 1", ex.getMessage());
     }
 
@@ -107,7 +107,7 @@ class TripEventParserTest {
                 "1, 22-01-2023 13:00:00, ON, Stop1, Company1, , 5500005555555559");
 
         InvalidTripEventException ex = assertThrows(InvalidTripEventException.class,
-                () -> TripEventParser.parse(stringReader));
+                () -> new TripEventReader(stringReader).readEvents());
         assertEquals("Invalid trip event BusID for record 1", ex.getMessage());
     }
 
@@ -117,7 +117,7 @@ class TripEventParserTest {
                 "1, 22-01-2023 13:00:00, ON, Stop1, Company1, Bus37, ");
 
         InvalidTripEventException ex = assertThrows(InvalidTripEventException.class,
-                () -> TripEventParser.parse(stringReader));
+                () -> new TripEventReader(stringReader).readEvents());
         assertEquals("Invalid trip event PAN for record 1", ex.getMessage());
     }
 

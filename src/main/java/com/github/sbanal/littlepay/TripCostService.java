@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
-public class TripService {
+public class TripCostService {
     private static final float CANCELLED_TRIP_COST = 0.0f;
 
     private Set<String> routeStops = new HashSet<>();
