@@ -12,6 +12,7 @@ This code is built and tested using the following toolset:
 * If customer did not tap off after all the records are read in taps.csv, it is assumed that they have an incomplete trip and will incur maximum cost
 * If customer tap on successively, the previous trip will be considered an incomplete trip and will incur maximum cost even if they tap on on the same stop
 * In trips.csv, empty string is written on Finished, DurationSecs and ToStopId for INCOMPLETE Status trips
+* The trips.csv file do not follow the CSV file format provided in the instructions PDF where there is a space after a delimiter comma. This application outputs a standard CSV file format which is written by CSV writer of library using Apache Commons CSV.
 
 ## Design Decisions
 ### Core Classes
@@ -58,6 +59,8 @@ unzip build/distributions/littlepay-1.0-SNAPSHOT.zip
 ```
 ./littlepay-1.0-SNAPSHOT/bin/littlepay src/test/resources/trip-cost.csv src/test/resources/taps.csv src/test/resources/trips.csv
 ```
+
+Example output file exist at `src/test/resources/trips.csv`
 
 ### Windows
 ```
