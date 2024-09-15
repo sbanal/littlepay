@@ -2,6 +2,7 @@ package com.github.sbanal.littlepay;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 import java.io.FileReader;
@@ -71,52 +72,66 @@ class TripCostServiceTest {
         assertEquals("Invalid route start 'stop1' and route end 'stop4' combination", ex.getMessage());
     }
 
-    @Test
-    void getTripCost_withTripCostLoadedAndCompletedTrip_shouldReturnTripCost() throws IOException {
+    @ParameterizedTest
+    @CsvSource({
+            "3.25, Stop1, Stop2",
+            "3.25, Stop2, Stop1",
+            "5.50, Stop3, Stop2",
+            "5.50, Stop2, Stop3",
+            "7.30, Stop1, Stop3",
+            "7.30, Stop3, Stop1",
+    })
+    void getTripCost_withTripCostLoadedAndCompletedTrip_shouldReturnTripCost(float cost,
+                                                                             String startStopId,
+                                                                             String endStopId) throws IOException {
         TripCostService service = new TripCostService();
         service.load(new FileReader("src/test/resources/trip-cost.csv"));
 
-        assertEquals(3.25f, service.getTripCost("Stop1", "Stop2"));
-        assertEquals(3.25f, service.getTripCost("Stop2", "Stop1"));
-        assertEquals(5.50f, service.getTripCost("Stop2", "Stop3"));
-        assertEquals(5.50f, service.getTripCost("Stop3", "Stop2"));
-        assertEquals(7.30f, service.getTripCost("Stop1", "Stop3"));
-        assertEquals(7.30f, service.getTripCost("Stop3", "Stop1"));
+        assertEquals(cost, service.getTripCost(startStopId, endStopId));
     }
 
-    @Test
-    void getTripCost_withCompletedTrip_shouldReturnTripCost() {
+    @ParameterizedTest
+    @CsvSource({
+            "3.25, stop1, stop2",
+            "3.25, stop2, stop1",
+            "5.50, stop3, stop2",
+            "5.50, stop2, stop3",
+            "7.30, stop1, stop3",
+            "7.30, stop3, stop1",
+            "1.50, stop2, stop4",
+            "1.50, stop4, stop2",
+    })
+    void getTripCost_withCompletedTrip_shouldReturnTripCost(float cost, String startStopId, String endStopId) {
         TripCostService service = createMockService();
 
-        assertEquals(3.25f, service.getTripCost("stop1", "stop2"));
-        assertEquals(3.25f, service.getTripCost("stop2", "stop1"));
-        assertEquals(5.50f, service.getTripCost("stop2", "stop3"));
-        assertEquals(5.50f, service.getTripCost("stop3", "stop2"));
-        assertEquals(7.30f, service.getTripCost("stop1", "stop3"));
-        assertEquals(7.30f, service.getTripCost("stop3", "stop1"));
-        assertEquals(1.50f, service.getTripCost("stop2", "stop4"));
-        assertEquals(1.50f, service.getTripCost("stop4", "stop2"));
+        assertEquals(cost, service.getTripCost(startStopId, endStopId));
     }
 
-    @Test
-    void getTripCost_withCancelledTrip_shouldReturnTripCost() {
+    @ParameterizedTest
+    @CsvSource({
+            "stop1, stop1",
+            "stop2, stop2",
+            "stop3, stop3",
+            "stop4, stop4",
+    })
+    void getTripCost_withCancelledTrip_shouldReturnZeroTripCost(String startStopId, String endStopId) {
         TripCostService service = createMockService();
 
-        assertEquals(0.0f, service.getTripCost("stop1", "stop1"));
-        assertEquals(0.0f, service.getTripCost("stop2", "stop2"));
-        assertEquals(0.0f, service.getTripCost("stop3", "stop3"));
-        assertEquals(0.0f, service.getTripCost("stop4", "stop4"));
+        assertEquals(0.0f, service.getTripCost(startStopId, endStopId));
     }
 
-    @Test
-    void getTripCost_withIncompleteTrip_shouldReturnTripCost() {
+    @ParameterizedTest
+    @CsvSource({
+            "7.30, stop1",
+            "5.50, stop2",
+            "7.30, stop3",
+            "1.50, stop4",
+    })
+    void getTripCost_withIncompleteTrip_shouldReturnTripCost(float cost, String startStopId) {
         TripCostService service = createMockService();
         service.calculateIncompleteTripCost();
 
-        assertEquals(7.30f, service.getTripCost("stop1", null));
-        assertEquals(5.50f, service.getTripCost("stop2", null));
-        assertEquals(7.30f, service.getTripCost("stop3", null));
-        assertEquals(1.50f, service.getTripCost("stop4", null));
+        assertEquals(cost, service.getTripCost(startStopId, null));
     }
 
     private TripCostService createMockService() {

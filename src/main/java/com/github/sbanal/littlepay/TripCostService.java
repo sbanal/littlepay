@@ -23,8 +23,8 @@ public class TripCostService {
                 .withTrim())) {
             for (CSVRecord csvRecord : csvParser.getRecords()) {
                 addTripCost(
-                        csvRecord.get("StartStopId"),
-                        csvRecord.get("EndStopId"),
+                        csvRecord.get("FromStopId"),
+                        csvRecord.get("ToStopId"),
                         Float.parseFloat(csvRecord.get("Cost"))
                 );
             }
